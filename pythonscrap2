@@ -1,0 +1,114 @@
+import os
+import time
+import requests
+import pytesseract
+from PIL import Image
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+# Input the district you want to select
+district = input("Enter the district: ")
+
+# Set the path to your Chrome driver executable
+chromedriver_path = r"C:\Users\Binod Kumar\Downloads\chromedriver_win32\chromedriver.exe"
+
+# Set the directory to save the downloaded PDFs
+download_dir = r"D:\sunidhi"
+
+# Set the path to the Tesseract executable
+tesseract_path = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
+# Configure Tesseract
+pytesseract.pytesseract.tesseract_cmd = tesseract_path
+
+# Configure Selenium options
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument("--headless")  # Run Chrome in headless mode
+chrome_options.add_argument("--disable-gpu")
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--disable-dev-shm-usage")
+
+# Set Chrome driver options to automatically download files to the specified directory
+chrome_options.add_experimental_option("prefs", {
+    "download.default_directory": download_dir,
+    "download.prompt_for_download": False,
+    "download.directory_upgrade": True,
+    "safebrowsing.enabled": True
+})
+
+# Start the browser
+driver = webdriver.Chrome(chromedriver_path, options=chrome_options)
+
+# Open the website
+driver.get("https://ceoelection.maharashtra.gov.in/searchlist/")
+
+# Wait for the page to load
+wait = WebDriverWait(driver, 10)
+wait.until(EC.presence_of_element_located((By.ID, "cmbdistrict")))
+
+# Select the district
+district_dropdown = driver.find_element(By.ID, "cmbdistrict")
+district_dropdown.send_keys(district)
+
+# Wait for the assembly constituency dropdown to load
+wait.until(EC.presence_of_element_located((By.ID, "cmbacname")))
+
+# Select the assembly constituency
+ac_dropdown = driver.find_element(By.ID, "cmbacname")
+ac_dropdown.send_keys("Select Any")  # Select any value
+
+# Select the type of revision (SSR 2023)
+revision_dropdown = driver.find_element(By.ID, "cmbtyperev")
+revision_dropdown.send_keys("SSR 2023")
+
+# Select the language of E-Rolls (Marathi)
+language_dropdown = driver.find_element(By.ID, "cmbrolllang")
+language_dropdown.send_keys("Marathi")
+
+# Wait for the part dropdown to load
+wait.until(EC.presence_of_element_located((By.ID, "cmbpart")))
+
+# Get the list of parts
+parts_dropdown = driver.find_element(By.ID, "cmbpart")
+parts_options = parts_dropdown.find_elements(By.TAG_NAME, "option")
+
+# Function to bypass the captcha using OCR (Tesseract)
+def bypass_captcha():
+    # Get the captcha image source
+    captcha_image = driver.find_element(By.ID, "txtCaptcha").get_attribute("src")
+
+    # Download the captcha image using requests
+    response = requests.get(captcha_image)
+
+    # Save the captcha image to a file
+    captcha_path = os.path.join(download_dir, "captcha.png")
+    with open(captcha_path, "wb") as file:
+        file.write(response.content)
+
+    # Perform OCR on the captcha image
+    captcha_value = pytesseract.image_to_string(Image.open(captcha_path))
+
+    # Fill in the captcha input field
+    captcha_input_field = driver.find_element(By.ID, "txtCaptcha")
+    captcha_input_field.clear()
+    captcha_input_field.send_keys(captcha_value)
+
+# Iterate over each part and download the PDF
+for part_option in parts_options:
+    part = part_option.get_attribute("value")
+    part_option.click()
+
+    # Bypass the captcha using OCR (Tesseract)
+    bypass_captcha()
+
+    # Click on 'Open PDF' to download the PDF
+    open_pdf_button = driver.find_element(By.ID, "btnsearch")
+    open_pdf_button.click()
+
+    # Wait for the PDF to be downloaded
+    time.sleep(5)  # Adjust the wait time based on your network speed and PDF size
+
+# Close the browser
+driver.quit()
