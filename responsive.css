@@ -1,0 +1,92 @@
+@media screen and (max-width: 1024px) {
+    html {
+        font-size: 9px;
+    }
+}
+
+@media screen and (max-width: 900px) {
+    html {
+        font-size: 8px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    html {
+        font-size: 10px;
+    }
+    nav{
+        width: 70px;
+    }
+    nav a{
+        padding: 10px 0;
+    }
+    .application{
+        width: 80%;
+    }
+    .container-contact{
+        width: 90%;
+    }
+
+    /* Container Css Start  */
+    .container {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "header"
+            "userProfile"
+            "userDetails"
+            "work_skills"
+            "timeline_about";
+        overflow-x: inherit;
+        overflow-y: inherit;
+        padding: 0;
+        width: 90%;
+        height: 100%;
+        box-shadow: none;
+        margin-left: 5%;
+    }
+
+    /* Container Card Css Start */
+    .container .card {
+        backdrop-filter: none;
+    }
+
+    .userDetails {
+        margin-bottom: 3rem;
+    }
+
+    .container::before,
+    .container::after {
+        display: none;
+    }
+
+    /* Header/Navbar Css Start  */
+    .container header {
+        padding: 2.5rem;
+    }
+}
+
+@media screen and (max-width: 500px) {
+    .container {
+        width: 100%;
+        overflow: initial;
+    }
+}
+
+
+@media(max-width: 1100px) {
+    .messageForm .halfWidth {
+        flex-basis: 100%;
+    }
+}
+
+@media(max-width: 900px) {
+    .container .row {
+        flex-wrap: wrap;
+    }
+
+    .row section.left,
+    .row section.right {
+        flex-basis: 100%;
+        margin: 0px;
+    }
+}
